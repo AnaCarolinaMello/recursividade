@@ -156,14 +156,10 @@ public class App {
         else if (v == '(' && position != 0) {
             e = new Executor();
             char v2 = value.charAt(position - 1);
-            char v3;
 
             if (v2 == 't') e.type = "not";
             else if (v2 == 'd') e.type = "and";
             else if (v2 == 'r') e.type = "or";
-
-            if (v2 == 't' || v2 == 'd') v3 = value.charAt(position - 4);
-            else v3 = value.charAt(position - 3);
 
             e.parent = executor;
             executor.subValue.add(e);
