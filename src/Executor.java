@@ -6,12 +6,15 @@ public class Executor {
     public String type;
     public List<Executor> subValue = new ArrayList<Executor>();
     public Executor parent;
-    // public List<Executor> subValue = new ArrayList<Executor>();
+    public int id;
+    private static int count = 0;
+
+    public Executor() {
+        id = ++count;
+    }
 
     public List<Integer> execute() {
         List<Integer> resultList = new ArrayList<Integer>();
-        int number = 0;
-        if (type == null) return value;
 
         if (subValue.size() != 0) {
             for (Executor childValue : subValue) {
@@ -19,9 +22,12 @@ public class Executor {
             }
         }
 
-        boolean result = number == 1 ? true : false;
+        if (value.size() == 0) return new ArrayList<>();
+        else if (type == null) return value;
+
+        boolean result = type.equals("and") ? true : false;
+
         for (int i = 0; i < value.size(); i++) {
-            // System.out.println("aqui " + type + " " + i);
             if (type.equals("and") && value.get(i) != 1) {
                 result = false;
                 break;
@@ -43,7 +49,6 @@ public class Executor {
 
     @Override
     public String toString() {
-        return "Value:" + value.toString() + " Type:" + type + "\n\tSub:" + (subValue != null ? subValue.toString() : "")
-        ;
+        return "Id: " + id + " Value:" + value.toString() + " Type:" + type + "\n\tSub:" + (subValue != null ? subValue.toString() : "");
     }
 }

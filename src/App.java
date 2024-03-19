@@ -10,27 +10,27 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 public class App {
-    // public static void main(String[] args) {
-    //     Scanner scanner = new Scanner(System.in);
-    //     String s = scanner.nextLine();
-    //     while (!s.equals("0")) {
-    //         Executor e = getAlgebraBooleana(s);
-    //         System.out.println(e.execute().get(0));
-    //         s = scanner.nextLine();
-    //     }
-    //     scanner.close();
-    // }
-    public static void main(String[] args) throws Exception {
-        // System.out.println(cesar("Ada"));
-        // System.out.println(palindromo("aia") ? "SIM" : "NAO");
-        // System.out.println(aleatorio("rasar"));
-        // int[] a = {7, 5, 0, 7};
-        // System.out.println(findIndex(a, 0));
-        // System.out.println(calCoseno());
-            Executor e = getAlgebraBooleana("2 0 0 and(not(A) , not(B))");
-            System.out.println(e.toString());
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String s = scanner.nextLine();
+        while (!s.equals("0")) {
+            Executor e = getAlgebraBooleana(s);
             System.out.println(e.execute().get(0));
+            s = scanner.nextLine();
+        }
+        scanner.close();
     }
+    // public static void main(String[] args) throws Exception {
+    //     // System.out.println(cesar("Ada"));
+    //     // System.out.println(palindromo("aia") ? "SIM" : "NAO");
+    //     // System.out.println(aleatorio("rasar"));
+    //     // int[] a = {7, 5, 0, 7};
+    //     // System.out.println(findIndex(a, 0));
+    //     // System.out.println(calCoseno());
+    //         Executor e = getAlgebraBooleana("3 0 1 0 or(and(A , B , C) , and(A , not(B) , C) , and(not(A) , not(B) , C) , and(not(A) , not(B) , not(C)))");
+    //         System.out.println(e.toString());
+    //         System.out.println(e.execute().get(0));
+    // }
 
     public static int findIndex(int[] vet, int n) {
         return findIndexP(vet, n, vet.length - 1);
@@ -105,7 +105,6 @@ public class App {
 
     public static Executor getAlgebraBooleana(String valor) {
         String[] valorArray = valor.split(" ");
-        valor = valor.replaceAll(" ", "");
         int nOperacoes = Integer.parseInt(valorArray[0]);
         valor = valor.replaceAll(valorArray[0], "");
         int[] numbers = new int[nOperacoes];
@@ -115,10 +114,27 @@ public class App {
         }
 
         valor = replaceValues(valor, 0, numbers);
-        Executor e = new Executor();
-        getAlgebraBooleanaP(valor, 0, e, null);
-        return e;
+        String newValue = valor;
 
+        for (int i : numbers) {
+            newValue = newValue.replaceAll(String.valueOf(i), "");
+        }
+        List<String> expressions = Arrays.asList(
+            newValue
+                .replaceAll("\\(", " ")
+                .replaceAll("\\)", " ")
+                .replaceAll(",", " ")
+                .split(" ")
+        );
+        expressions = expressions.stream()
+            .filter(value -> !value.isEmpty())
+            .collect(Collectors.toList());
+
+        valor = valor.replaceAll(" ", "").replaceFirst(expressions.get(0),"");
+        Executor e = new Executor();
+        e.type = expressions.get(0);
+        getAlgebraBooleanaP(valor, 0, e, e);
+        return e;
     }
 
     private static String replaceValues(String valor, int position, int[] numbers) {
@@ -134,15 +150,21 @@ public class App {
 
     private static Executor getAlgebraBooleanaP(String value, int position, Executor executor, Executor parent) {
         char v = value.charAt(position);
-        System.out.println(executor);
+
         Executor e = null;
         if (v == ')') e = parent;
-        else if (v == '(') {
-            char v2 = value.charAt(position - 1);
-            if (v2 == 't') executor.type = "not";
-            else if (v2 == 'd') executor.type = "and";
-            else if (v2 == 'r') executor.type = "or";
+        else if (v == '(' && position != 0) {
             e = new Executor();
+            char v2 = value.charAt(position - 1);
+            char v3;
+
+            if (v2 == 't') e.type = "not";
+            else if (v2 == 'd') e.type = "and";
+            else if (v2 == 'r') e.type = "or";
+
+            if (v2 == 't' || v2 == 'd') v3 = value.charAt(position - 4);
+            else v3 = value.charAt(position - 3);
+
             e.parent = executor;
             executor.subValue.add(e);
         }
@@ -150,7 +172,7 @@ public class App {
         else if (v == '0') executor.value.add(0);
 
         if (position == value.length() - 1) return executor;
-        return getAlgebraBooleanaP(value, position + 1, e != null ? e : executor, e != null && e.parent != null ? e.parent : null);
+        return getAlgebraBooleanaP(value, position + 1, e != null ? e : executor, e != null && e.parent != null ? e.parent : parent);
     }
 
     public static void algebra(String word) {
